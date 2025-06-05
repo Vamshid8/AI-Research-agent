@@ -171,7 +171,10 @@ def create_patent_analysis_crew(model_name="llama3"):
     if not test_model(model_name):
         raise RuntimeError(f"Model {model_name} is not responding to test prompts.")
 
-    # Set up the Ollama LLM with the correct class
+    # Fix the model format by adding the 'ollama/' prefix
+    if not model_name.startswith("ollama/"):
+        model_name = f"ollama/{model_name}"
+
     llm = OllamaLLM(model=model_name, temperature=0.2)
 
     # Create tools using CrewAI's BaseTool subclasses
@@ -333,7 +336,17 @@ def run_patent_analysis(research_area="Lithium Battery", model_name="llama3"):
     try:
         crew = create_patent_analysis_crew(model_name)
         result = crew.kickoff(inputs={"research_area": research_area})
-        return result
+
+        # Extract the string output from the CrewOutput object
+        if hasattr(result, "output"):
+            # Recent CrewAI versions store results in the 'output' attribute
+            return result.output
+        elif hasattr(result, "result"):
+            # Some versions might use 'result'
+            return result.result
+        else:
+            # Last resort - convert to string
+            return str(result)
     except Exception as e:
         return (
             f"Analysis failed: {str(e)}\n\nTroubleshooting tips:\n"
@@ -363,6 +376,11 @@ if __name__ == "__main__":
     # Save results to file
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"patent_analysis_{timestamp}.txt"
+
+    # Ensure result is a string before writing to file
+    if not isinstance(result, str):
+        result = str(result)
+
     with open(filename, "w") as f:
         f.write(result)
 

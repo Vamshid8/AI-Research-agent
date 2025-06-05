@@ -44,6 +44,10 @@ def run_complete_analysis():
     try:
         result = run_patent_analysis(research_area, model_name)
 
+        # Ensure result is a string before writing to file
+        if not isinstance(result, str):
+            result = str(result)
+
         # Save results to file
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"patent_analysis_{timestamp}.txt"
