@@ -4,6 +4,7 @@ import os
 import tiktoken
 
 from embedding import get_embedding
+from opensearch_client import create_index_if_not_exists, get_opensearch_client
 
 
 def load_patent_data(dir_path):
@@ -69,12 +70,19 @@ def index_patent_data(client, index_name, patent_data):
 
 
 if __name__ == "__main__":
-    dir_path = "results2"
+    dir_path = "results"
+
+    host = "localhost"
+    port = 9200
+    client = get_opensearch_client(host, port)
+    index_name = "patents"
+    create_index_if_not_exists(client, index_name)
+
     try:
         patent_data = load_patent_data(dir_path)
         print(f"Loaded {len(patent_data)} patents from '{dir_path}'")
-        for patent in patent_data:
-            print(patent)
-            print("-" * 40)
+
+        index_patent_data(client, index_name, patent_data)
+        print(f"Indexed {len(patent_data)} patents into '{index_name}' index.")
     except Exception as e:
         print(f"Error: {e}")

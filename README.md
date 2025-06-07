@@ -89,7 +89,7 @@ SERPAPI_API_KEY=your_key_here
 ### Usage
 Run the main application:
 ```
-python patent_analyzer_app.py
+python agentic_rag.py
 ```
 
 The application presents a menu with options:

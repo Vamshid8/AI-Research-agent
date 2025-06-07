@@ -148,28 +148,11 @@ def create_patent_analysis_crew(model_name="llama3"):
             "Ollama service is not available. Make sure Ollama is running."
         )
 
-    # Find best available model
-    if model_name not in available_models:
-        print(
-            f"Model {model_name} not found in Ollama. Available models: {available_models}"
-        )
-        if "llama3" in available_models:
-            model_name = "llama3"
-            print(f"Using llama3 instead.")
-        elif "llama2" in available_models:
-            model_name = "llama2"
-            print(f"Using llama2 instead.")
-        elif available_models:
-            model_name = available_models[0]
-            print(f"Using {model_name} instead.")
-        else:
-            raise RuntimeError(
-                "No models available in Ollama. Please pull a model first."
-            )
-
     # Test model
     if not test_model(model_name):
         raise RuntimeError(f"Model {model_name} is not responding to test prompts.")
+    
+    print("model found and tested successfully")
 
     # Fix the model format by adding the 'ollama/' prefix
     if not model_name.startswith("ollama/"):
