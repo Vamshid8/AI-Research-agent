@@ -67,7 +67,7 @@ def fetch_patent_data(query, dir_path):
 
 if __name__ == "__main__":
     query = input("Enter the search query for patents: ")
-    dir_path = input("Enter the directory path to save results: ")
+    dir_path = "results"
     try:
         fetch_patent_data(query, dir_path)
         print(f"Patent data fetched and saved to '{dir_path}'")

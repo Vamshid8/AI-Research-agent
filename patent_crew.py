@@ -131,12 +131,13 @@ class AnalyzePatentTrendsTool(BaseTool):
 
 
 # Define our agents
-def create_patent_analysis_crew(model_name="llama3"):
+def create_patent_analysis_crew(model_name="llama3", research_area="Lithium Battery"):
     """
     Create a CrewAI crew for patent analysis using Ollama.
 
     Args:
         model_name: Name of the Ollama model to use
+        research_area: The research area to analyze
 
     Returns:
         Crew: A CrewAI crew configured for patent analysis
@@ -208,84 +209,89 @@ def create_patent_analysis_crew(model_name="llama3"):
         tools=tools,
     )
 
-    # Create tasks with shorter, simpler descriptions (to reduce LLM load)
+    # Create tasks with research_area as an input variable
     task1 = Task(
-        description="""
-        Define a research plan for lithium battery patents:
-        1. Key technology areas to focus on
-        2. Time periods for analysis (focus on last 3 years)
-        3. Specific technological aspects to analyze
-        """,
-        expected_output="""A research plan with focus areas, time periods, and key technological aspects.""",
+        description=(
+            "Define a research plan for {research_area} patents:\n"
+            "1. Key technology areas to focus on\n"
+            "2. Time periods for analysis (focus on last 3 years)\n"
+            "3. Specific technological aspects to analyze"
+        ),
+        expected_output="A research plan with focus areas, time periods, and key technological aspects.",
         agent=research_director,
+        input_variables=["research_area"],
     )
 
     task2 = Task(
-        description="""
-        Using the research plan, retrieve patents related to lithium battery technology from the last 3 years.
-        Use the search_patents and search_patents_by_date_range tools to gather comprehensive data.
-        Focus on the most relevant and innovative patents.
-        Group patents by sub-technologies within lithium batteries.
-        Provide a summary of the retrieved patents, including:
-        - Total number of patents found
-        - Key companies/assignees
-        - Main technological categories
-        """,
-        expected_output="""A comprehensive patent retrieval report containing:
-        - Summary of total patents found
-        - List of key patents grouped by sub-technology
-        - Analysis of top companies/assignees
-        - Overview of main technological categories
-        - List of the most innovative patents with summaries
-        """,
+        description=(
+            "Using the research plan, retrieve patents related to {research_area} technology from the last 3 years.\n"
+            "Use the search_patents and search_patents_by_date_range tools to gather comprehensive data.\n"
+            "Focus on the most relevant and innovative patents.\n"
+            "Group patents by sub-technologies within {research_area}.\n"
+            "Provide a summary of the retrieved patents, including:\n"
+            "- Total number of patents found\n"
+            "- Key companies/assignees\n"
+            "- Main technological categories"
+        ),
+        expected_output=(
+            "A comprehensive patent retrieval report containing:\n"
+            "- Summary of total patents found\n"
+            "- List of key patents grouped by sub-technology\n"
+            "- Analysis of top companies/assignees\n"
+            "- Overview of main technological categories\n"
+            "- List of the most innovative patents with summaries\n"
+        ),
         agent=patent_retriever,
         dependencies=[task1],
+        input_variables=["research_area"],
     )
 
     task3 = Task(
-        description="""
-        Analyze the retrieved patent data to identify trends and patterns:
-        1. Identify growing vs. declining areas of innovation
-        2. Analyze technology evolution over time
-        3. Identify key companies and their focus areas
-        4. Determine emerging sub-technologies within lithium batteries
-        5. Analyze patent claims to understand technological improvements
-        
-        Create a comprehensive analysis with specific trends, supported by data.
-        """,
-        expected_output="""A trend analysis report containing:
-        - Identification of growing vs. declining technology areas
-        - Timeline of technology evolution
-        - Company focus analysis
-        - Emerging sub-technologies list
-        - Technical improvement trends
-        - Data-backed conclusions on innovation patterns
-        """,
+        description=(
+            "Analyze the retrieved patent data to identify trends and patterns:\n"
+            "1. Identify growing vs. declining areas of innovation\n"
+            "2. Analyze technology evolution over time\n"
+            "3. Identify key companies and their focus areas\n"
+            "4. Determine emerging sub-technologies within {research_area}\n"
+            "5. Analyze patent claims to understand technological improvements\n"
+            "\nCreate a comprehensive analysis with specific trends, supported by data."
+        ),
+        expected_output=(
+            "A trend analysis report containing:\n"
+            "- Identification of growing vs. declining technology areas\n"
+            "- Timeline of technology evolution\n"
+            "- Company focus analysis\n"
+            "- Emerging sub-technologies list\n"
+            "- Technical improvement trends\n"
+            "- Data-backed conclusions on innovation patterns\n"
+        ),
         agent=data_analyst,
         dependencies=[task2],
+        input_variables=["research_area"],
     )
 
     task4 = Task(
-        description="""
-        Based on the patent analysis, predict future innovations in lithium battery technology:
-        1. Identify technologies likely to see breakthroughs in the next 2-3 years
-        2. Recommend specific areas for R&D investment
-        3. Predict which companies are positioned to lead innovation
-        4. Identify potential disruptive technologies
-        5. Outline specific technical improvements likely to emerge
-        
-        Create a detailed forecast with specific technology predictions and justification.
-        """,
-        expected_output="""A future innovation forecast containing:
-        - Predicted breakthrough technologies for next 2-3 years
-        - Prioritized list of R&D investment areas
-        - Companies likely to lead future innovation
-        - Potential disruptive technologies and their impact
-        - Timeline of expected technical improvements
-        - Justification for all predictions based on patent data
-        """,
+        description=(
+            "Based on the patent analysis, predict future innovations in {research_area} technology:\n"
+            "1. Identify technologies likely to see breakthroughs in the next 2-3 years\n"
+            "2. Recommend specific areas for R&D investment\n"
+            "3. Predict which companies are positioned to lead innovation\n"
+            "4. Identify potential disruptive technologies\n"
+            "5. Outline specific technical improvements likely to emerge\n"
+            "\nCreate a detailed forecast with specific technology predictions and justification."
+        ),
+        expected_output=(
+            "A future innovation forecast containing:\n"
+            "- Predicted breakthrough technologies for next 2-3 years\n"
+            "- Prioritized list of R&D investment areas\n"
+            "- Companies likely to lead future innovation\n"
+            "- Potential disruptive technologies and their impact\n"
+            "- Timeline of expected technical improvements\n"
+            "- Justification for all predictions based on patent data\n"
+        ),
         agent=innovation_forecaster,
         dependencies=[task3],
+        input_variables=["research_area"],
     )
 
     # Create the crew with debugging enabled
@@ -317,7 +323,7 @@ def run_patent_analysis(research_area="Lithium Battery", model_name="llama3"):
         str: Analysis results
     """
     try:
-        crew = create_patent_analysis_crew(model_name)
+        crew = create_patent_analysis_crew(model_name, research_area)
         result = crew.kickoff(inputs={"research_area": research_area})
 
         # Extract the string output from the CrewOutput object
