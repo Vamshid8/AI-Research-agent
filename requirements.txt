@@ -1,9 +1,10 @@
+pip>=24.0
 opensearch-py==2.8.0
 python-dotenv
 requests
 crewai==0.28.8
+langchain==0.1.14
 langchain-community==0.0.29
-langchain-ollama
+langchain-ollama==0.0.6
 streamlit
-langchain
-langchain-core<0.2.0
+langchain-core==0.1.33
